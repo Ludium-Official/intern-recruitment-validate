@@ -1,0 +1,17 @@
+{
+  "runId": "analysis-1694205424",
+  "status": "SUCCESS",
+  "processedAt": "2023-10-27T10:32:00Z",
+  "finalDecision": "PASS",
+  "summary": "AI 분석 결과, 문제가 발견되지 않았습니다.",
+  "reportDetails": {
+    "scamCheck": {
+      "issues": []
+    },
+    "validityCheck": {
+      "issues": [
+        "유효함"
+      ]
+    }
+  }
+}

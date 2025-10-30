@@ -1,0 +1,8 @@
+{
+  "runId": "run-err-500",
+  "status": "failed",
+  "finalDecision": null,
+  "summary": "AI 서버(Gemini)에 연결하는 중 타임아웃이 발생했습니다. 잠시 후 다시 시도해주세요.",
+  "reportDetails": null,
+  "processedAt": "2025-10-28T10:30:00.000Z"
+}

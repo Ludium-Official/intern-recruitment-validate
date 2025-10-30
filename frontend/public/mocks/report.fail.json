@@ -1,0 +1,20 @@
+{
+  "runId": "analysis-1694205423",
+  "status": "SUCCESS",
+  "processedAt": "2023-10-27T10:30:00Z",
+  "finalDecision": "SCAM_DETECTED",
+  "summary": "This JSON content strongly indicates a financial phishing scam...",
+  "reportDetails": {
+    "scamCheck": {
+      "issues": [
+        "긴급한 보안 위협을 가장하여...",
+        "발신자 주소('Urgent_Transfer@...')는..."
+      ]
+    },
+    "validityCheck": {
+      "issues": [
+        "유효함"
+      ]
+    }
+  }
+}
