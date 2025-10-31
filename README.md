@@ -75,7 +75,7 @@ npm run dev
 ```
 ℹ️ 브라우저에서 http://localhost:5173 (Vite 기본 포트)으로 접속하여 UI가 정상적으로 표시되는지 확인하세요.
 
-6. API Contract (API 명세)
+## 6. API Contract (API 명세)
 FE와 BE가 주고받는 핵심 JSON 데이터 구조입니다.
 
 A. FE → BE (Request)
@@ -143,7 +143,7 @@ b. 실패 시 (status: "error")
 ```
 ---
 
-7. 팀원 및 역할
+## 7. 팀원 및 역할
 PM / Lead: 장훈
 
 Backend / AI: 김성균
