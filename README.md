@@ -53,12 +53,13 @@ echo "AI_API_KEY=YOUR_GEMINI_API_KEY_HERE" > .env
 
 # d. 서버를 시작합니다.
 node server.js
+```
 ℹ️ 서버가 JSON 분석 서버가 http://localhost:3000 에서 실행 중입니다. 메시지와 함께 실행되는지 확인하세요.
 
 B. Frontend (Client) 실행
 프론트엔드(React 앱)는 localhost:5173 (Vite 기본값)에서 실행됩니다.
 
-Bash
+```Bash
 
 # a. 프론트엔드(React) 프로젝트 폴더로 이동합니다.
 cd /path/to/frontend-folder
@@ -71,6 +72,7 @@ npm install
 
 # d. 프론트엔드 개발 서버를 시작합니다.
 npm run dev
+```
 ℹ️ 브라우저에서 http://localhost:5173 (Vite 기본 포트)으로 접속하여 UI가 정상적으로 표시되는지 확인하세요.
 
 6. API Contract (API 명세)
@@ -79,7 +81,7 @@ FE와 BE가 주고받는 핵심 JSON 데이터 구조입니다.
 A. FE → BE (Request)
 POST /analyze
 
-JSON
+```JSON
 
 {
   "programMeta": {
@@ -97,9 +99,10 @@ JSON
     }
   ]
 }
+```
 B. BE → FE (Response)
 a. 성공 시 (status: "success")
-JSON
+```JSON
 
 {
   "status": "success",
@@ -124,10 +127,11 @@ JSON
     }
   }
 }
+```
 b. 실패 시 (status: "error")
 (현재 MVP 범위에서 배제되었으나, 추후 확장 예정)
 
-JSON
+```JSON
 
 {
   "status": "error",
@@ -136,6 +140,8 @@ JSON
     "summary": "AI 서버(Gemini)에 연결하는 중 타임아웃이 발생했습니다."
   }
 }
+```
+
 7. 팀원 및 역할
 PM / Lead: 장훈
 
