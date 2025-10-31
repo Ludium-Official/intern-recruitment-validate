@@ -1,4 +1,4 @@
-1. Ludium AI Program Verification System (AI 프로그램 검증 시스템)
+# 1. Ludium AI Program Verification System (AI 프로그램 검증 시스템)
 
 [![Status](https://img.shields.io/badge/status-in_progress-yellowgreen)](https://github.com/Ludium-Official/intern-recruitment-validate)
 
@@ -141,6 +141,7 @@ b. 실패 시 (status: "error")
   }
 }
 ```
+---
 
 7. 팀원 및 역할
 PM / Lead: 장훈
