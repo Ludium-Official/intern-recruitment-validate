@@ -1,8 +1,25 @@
 import React from 'react';
 
+function formatCheckTitle(key) {
+  const result = key.replace(/([A-Z])/g, ' $1');
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
+function getCheckEmoji(key) {
+  const emojiMap = {
+    scamCheck: '🚨',
+    validityCheck: '⚙️', 
+    performanceCheck: '🚀',
+    securityCheck: '🛡️',
+  };
+  return emojiMap[key] || '📊';
+}
+
 function ReportDisplay({ report }) {
   
   const isFail = report.finalDecision !== 'CLEAN';
+  const reportDetails = report.reportDetails;
+  const checkKeys = Object.keys(reportDetails);
 
   return (
     <div className={`report-container ${isFail ? 'status-fail' : 'status-pass'}`}>
@@ -14,42 +31,43 @@ function ReportDisplay({ report }) {
       </div>
 
       <div className="report-body">
-        <div className="check-section">
-          <h3>
-            <span role="img" aria-label="scam">🚨</span> 스캠 / 악성 코드 (Scam Check)
-          </h3>
-          {report.reportDetails.scamCheck.issues.length === 0 ? (
-            <p className="no-issues">발견된 이슈가 없습니다.</p>
-          ) : (
-            <ul className="issue-list">
-              {report.reportDetails.scamCheck.issues.map((issue, index) => (
-                <li key={index}>
-                  <p>{issue}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {checkKeys.map((key) => {
+          const checkData = reportDetails[key];
 
-        <div className="check-section">
-          <h3>
-            <span role="img" aria-label="validity">⚙️</span> 기본 유효성 (Validity Check)
-          </h3>
-          {report.reportDetails.validityCheck.issues.length === 0 ? (
-            <p className="no-issues">발견된 이슈가 없습니다.</p>
-          ) : (
-            <ul className="issue-list">
-              {report.reportDetails.validityCheck.issues.map((issue, index) => (
-                <li key={index}>
-                  <p>{issue}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          if (!checkData || !checkData.issues) {
+            return null; 
+          }
+
+          const issues = checkData.issues;
+          const noIssues = issues.length === 0 || (issues.length === 1 && issues[0].toLowerCase() === '없음'); 
+
+          return (
+            <div className="check-section" key={key}>
+              <h3>
+                <span role="img" aria-label={key}>
+                  {getCheckEmoji(key)}
+                </span>
+                {formatCheckTitle(key)}
+              </h3>
+              
+              {noIssues ? (
+                <p className="no-issues">발견된 이슈가 없습니다.</p>
+              ) : (
+                <ul className="issue-list">
+                  {issues.map((issue, index) => (
+                    <li key={index} className={`issue-item issue-item-${key}`}>
+                      <p>{issue}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+        
       </div>
     </div>
-  ); 
+  );
 } 
 
 export default ReportDisplay;

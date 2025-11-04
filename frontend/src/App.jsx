@@ -4,7 +4,6 @@ import FileUploader from './components/FileUploader';
 import ReportDisplay from './components/ReportDisplay';
 
 const API_URL = 'http://localhost:3000/analyze';
-
 const ALLOWED_EXTENSIONS = ['.js', '.sol', '.json', '.jsx', '.ts', '.txt', '.md'];
 
 function App() {
@@ -12,24 +11,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [reportData, setReportData] = useState(null);
   const [error, setError] = useState(null);
-  
+
   const handleFilesSelect = (files) => {
     setError(null);
     setReportData(null);
     
-    let invalidFileFound = false;
-    const validFiles = [];
-    
-    for (const file of files) {
+    const validFiles = files.filter(file => {
       const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-      if (ALLOWED_EXTENSIONS.includes(extension)) {
-        validFiles.push(file);
-      } else {
-        invalidFileFound = true;
-      }
-    }
+      return ALLOWED_EXTENSIONS.includes(extension);
+    });
 
-    if (invalidFileFound) {
+    if (validFiles.length !== files.length) {
       setError("잘못된 형식의 파일을 업로드 하였습니다. 파일 형식을 확인해주세요. (.js, .sol, .json 등)");
       setSelectedFiles([]);
     } else {
@@ -38,10 +30,8 @@ function App() {
   };
 
   const handleAnalyzeClick = async () => {
-    if (selectedFiles.length === 0) {
-      if (!error) { 
+    if (selectedFiles.length === 0) { 
         setError("최소 1개 이상의 파일을 업로드해야 합니다.");
-      }
       return;
     }
     
@@ -71,10 +61,6 @@ function App() {
         codeFiles: codeFiles
       };
       
-      console.log("--- [FE] API Request (FE > BE) ---");
-      console.log(JSON.stringify(requestBody, null, 2));
-      console.log("---------------------------------");
-
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -89,10 +75,6 @@ function App() {
         const errorSummary = responseJson.analysis ? responseJson.analysis.summary : `API 호출 실패: ${response.statusText}`;
         throw new Error(errorSummary);
       }
-      
-      console.log("--- [FE] API Response (BE > FE) ---");
-      console.log(responseJson);
-      console.log("---------------------------------");
   
       setReportData(responseJson.analysis);
 
@@ -104,6 +86,12 @@ function App() {
     }
   };
 
+  const handleReset = () => {
+    setSelectedFiles([]);
+    setReportData(null);
+    setError(null);
+  };
+
   return (
     <div className="App">
       <header className="app-header">
@@ -112,12 +100,14 @@ function App() {
       </header>
 
       <main>
-        <FileUploader 
-          onFilesSelect={handleFilesSelect}
-          disabled={isLoading}
-        />
+        {!isLoading && !reportData && (
+          <FileUploader 
+            onFilesSelect={handleFilesSelect}
+            disabled={isLoading}
+          />
+        )}
 
-        {selectedFiles.length > 0 && !isLoading && (
+        {selectedFiles.length > 0 && !isLoading && !reportData && (
           <div className="file-list">
             <strong>선택된 파일:</strong>
             <ul>
@@ -128,13 +118,15 @@ function App() {
           </div>
         )}
 
-        <button 
-          className="analyze-button"
-          onClick={handleAnalyzeClick}
-          disabled={isLoading || selectedFiles.length === 0}
-        >
-          {isLoading ? "AI가 분석 중입니다..." : "분석하기"}
-        </button>
+        {!reportData && (
+          <button 
+            className="analyze-button"
+            onClick={handleAnalyzeClick}
+            disabled={isLoading || selectedFiles.length === 0}
+          >
+            {isLoading ? "AI가 분석 중입니다..." : "분석하기"}
+          </button>
+        )}  
 
         {error && <div className="error-message">{error}</div>}
 
@@ -144,9 +136,17 @@ function App() {
             <p>AI가 코드를 검증하고 있습니다. 잠시만 기다려주세요...</p>
           </div>
         )}
-      
+        
         {reportData && !isLoading && (
-          <ReportDisplay report={reportData} />
+          <>  
+            <ReportDisplay report={reportData} />
+            <button 
+              className="reset-button"
+              onClick={handleReset}
+            >
+              새로 분석하기
+            </button>
+          </>
         )}
       </main>
       

@@ -2,24 +2,24 @@ import React, { useState } from 'react';
 
 function FileUploader({ onFilesSelect, disabled }) {
   const [dragOver, setDragOver] = useState(false);
-  const handleDrop = (e) => {  
+  const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
+
     if (e.dataTransfer.files) {
       onFilesSelect(Array.from(e.dataTransfer.files));
     }
-  }; 
+  };
 
-  const handleChange = (e) => {   
-    if (e.target.files) {     
+  const handleChange = (e) => {
+    if (e.target.files) {
       onFilesSelect(Array.from(e.target.files));
     }
-  }; 
+  };
 
   return (
     <div 
       className={`file-uploader ${dragOver ? 'drag-over' : ''} ${disabled ? 'disabled' : ''}`}
-   
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
