@@ -9,16 +9,19 @@ function getCheckEmoji(key) {
   const emojiMap = {
     scamCheck: '🚨',
     validityCheck: '⚙️', 
-    performanceCheck: '🚀',
-    securityCheck: '🛡️',
+    sensationalCheck: '🧐',
+    dataCollectionCheck: '🕵️'
   };
-  return emojiMap[key] || '📊';
+
+  return emojiMap[key] || '📊'; 
 }
 
 function ReportDisplay({ report }) {
   
   const isFail = report.finalDecision !== 'CLEAN';
+  
   const reportDetails = report.reportDetails;
+  
   const checkKeys = Object.keys(reportDetails);
 
   return (
@@ -31,36 +34,55 @@ function ReportDisplay({ report }) {
       </div>
 
       <div className="report-body">
+
         {checkKeys.map((key) => {
+          
           const checkData = reportDetails[key];
 
-          if (!checkData || !checkData.issues) {
-            return null; 
-          }
+          if (!checkData || !checkData.issues) return null; 
 
           const issues = checkData.issues;
-          const noIssues = issues.length === 0 || (issues.length === 1 && issues[0].toLowerCase() === '없음'); 
 
           return (
             <div className="check-section" key={key}>
               <h3>
                 <span role="img" aria-label={key}>
-                  {getCheckEmoji(key)}
+                  {getCheckEmoji(key)} 
                 </span>
                 {formatCheckTitle(key)}
               </h3>
               
-              {noIssues ? (
-                <p className="no-issues">발견된 이슈가 없습니다.</p>
-              ) : (
-                <ul className="issue-list">
-                  {issues.map((issue, index) => (
-                    <li key={index} className={`issue-item issue-item-${key}`}>
+              <ul className="issue-list">
+                {issues.map((issue, index) => {
+                  
+                  const safeKeywords = ['없음', '유효함', '발견되지 않았습니다', '모든 파일이 유효함'];
+                  const isSafeIssue = safeKeywords.some(keyword => 
+                      issue.includes(keyword)
+                  );
+
+                  let itemStyleClass = '';
+                  
+                  if (isSafeIssue) {
+                    itemStyleClass = 'issue-item-validity';
+                  } else if (key === 'scamCheck') {
+                    itemStyleClass = 'issue-item-scam';
+                  } else if (key === 'validityCheck') {
+                    itemStyleClass = 'issue-item-scam';
+                  } else if (key === 'sensationalCheck') { 
+                    itemStyleClass = 'issue-item-quality';
+                  } else if (key === 'dataCollectionCheck') {
+                    itemStyleClass = 'issue-item-quality';
+                  } else {
+                    itemStyleClass = 'issue-item-scam';
+                  }
+
+                  return (
+                    <li key={index} className={`issue-item ${itemStyleClass}`}>
                       <p>{issue}</p>
                     </li>
-                  ))}
-                </ul>
-              )}
+                  );
+                })}
+              </ul>
             </div>
           );
         })}

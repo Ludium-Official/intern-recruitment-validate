@@ -33,30 +33,53 @@ const MODEL_NAME = 'gemini-2.5-flash';
 async function analyzeProgramWithGemini(programString) {
     
     const prompt = `
-    당신은 코드 분석 시스템입니다. 아래에 제공된 코드 파일을 분석하여 다음 두 가지 질문에 대해 명확하게 답변하세요.
+   당신은 코드 분석 시스템입니다. 아래에 제공된 코드 파일을 분석하여 다음 5가지 질문에 대해 명확하게 답변하세요.
     
-    1. 이 프로그램 코드에 **금융 사기(스캠) 또는 악성 코드** (데이터 탈취, 악성 URL 호출 등)가 포함되어 있습니까?
-    2. 이 코드 파일이 **구문적으로 유효한(valid) 코드**입니까?
+    1.  이 프로그램 코드에 **금융 사기(스캠) 또는 악성 코드** (데이터 탈취, 악성 URL 호출 등)가 포함되어 있습니까?
+    2.  이 코드 파일이 **구문적으로 유효한(valid) 코드**입니까?
+    3.  이 프로그램 코드에 **선정적인(suggestive/obscene) 문구**가 있습니까? (예: 변수명, 주석, 문자열)
+    4.  이 프로그램 코드는 **유저의 민감한 정보를 수집**합니까? (예: 개인 식별 정보, 금융 정보 등)
+    5.  이 프로그램 코드에 **논리적 오류** 또는 **주석/함수명과 실제 동작이 일치하지 않는 경우**가 있습니까? 
 
     **답변은 반드시 한글로 Markdown 코드 블록 없이 순수한 JSON 객체(raw JSON object)로만 작성해 주세요.**
     
     --- JSON 출력 형식 (필수) ---
     {
-      "runId": "analysis-YYMMDD-XXXXXXXXX",
+      "runId": "analysis-${new Date().toISOString().split('T')[0]}-XXXXXXXXX",
       "status": "SUCCESS" 또는 "ERROR",
       "processedAt": "${new Date().toISOString()}",
-      "finalDecision": "SCAM_DETECTED" 또는 "CLEAN" 또는 "INVALID_FORMAT",
+      "finalDecision": "SCAM_DETECTED" 또는 "INVALID_FORMAT" 또는 "CONTENT_WARNING" 또는 "CLEAN",
       "summary": "프로그램 전체에 대한 분석 결과를 요약합니다.",
       "reportDetails": {
         "scamCheck": {
+          "detected": true 또는 false,
           "issues": ["스캠/악성 코드 관련 문제점 또는 '없음'"]
         },
         "validityCheck": {
+          "valid": true 또는 false,
           "issues": ["코드 구문 유효성 관련 문제점 또는 '모든 파일이 유효함'"]
+        },
+        "sensationalCheck": {
+          "detected": true 또는 false,
+          "issues": ["선정적인 문구 관련 문제점 또는 '없음'"]
+        },
+        "dataCollectionCheck": {
+          "detected": true 또는 false,
+          "issues": ["민감 정보 수집 관련 문제점 또는 '없음'"]
+        },
+        "logicCheck": {
+          "detected": true 또는 false,
+          "issues": ["논리적 오류 또는 코드 불일치 관련 문제점 또는 '없음'"]
         }
       }
     }
     
+    --- finalDecision 결정 로직 (필수) ---
+    1.  'scamCheck.detected'가 true이면 "SCAM_DETECTED"
+    2.  'validityCheck.valid'가 false이면 "INVALID_FORMAT"
+    3.  'sensationalCheck.detected'가 true이거나 'dataCollectionCheck.detected'가 true이거나 'logicCheck.detected'가 true이면 "CONTENT_WARNING"
+    4.  위 1, 2, 3에 해당하지 않고 모든 검사를 통과한 경우에만 "CLEAN"
+
     --- 분석할 프로그램 코드 () ---
     ${programString} 
     ---
