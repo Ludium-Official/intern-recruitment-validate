@@ -1,10 +1,8 @@
-/* 설명: 섹션 구분용 주석(기본 레이아웃 관련 규칙들이 아래에 위치합니다) */
 /* --- 기본 레이아웃 --- */
-/* --- 1. 기본 레이아웃 (Light Mode) --- */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #FFFFFF; /* [변경] 새하얀 배경 */
-  color: #333333; /* [변경] 기본 텍스트 (어두운 회색) */
+  background-color: #FFFFFF;
+  color: #333333;
   margin: 0;
   padding: 0;
 }
@@ -17,16 +15,16 @@ body {
 
 .app-header {
   text-align: center;
-  border-bottom: 1px solid #EEEEEE; /* [변경] 연한 회색 테두리 */
+  border-bottom: 1px solid #EEEEEE;
   padding-bottom: 20px;
   margin-bottom: 30px;
 }
 .app-header h1 {
-  color: #830e7b; /* [변경] Ludium 짙은 보라색 */
+  color: #830e7b;
   margin: 0;
 }
 .app-header p {
-  color: #555555; /* [변경] 부제목 텍스트 */
+  color: #555555;
 }
 
 main {
@@ -39,22 +37,22 @@ main {
   text-align: center;
   margin-top: 50px;
   font-size: 0.8rem;
-  color: #AAAAAA; /* [변경] 연한 회색 */
+  color: #AAAAAA;
 }
 
-/* --- 2. 파일 업로더 (Light Mode) --- */
+/* --- 파일 업로더  --- */
 .file-uploader {
-  border: 2px dashed #D0D0D0; /* [변경] 연한 회색 점선 */
+  border: 2px dashed #D0D0D0;
   border-radius: 10px;
   padding: 30px;
   text-align: center;
   cursor: pointer;
-  background-color: #F9F9F9; /* [변경] 매우 연한 회색 배경 */
+  background-color: #F9F9F9;
   transition: all 0.2s ease-in-out;
 }
 .file-uploader.drag-over {
-  border-color: #6F42C1; /* [변경] 보라색 테두리 */
-  background-color: #EFEAFF; /* [변경] 연한 보라색 배경 */
+  border-color: #6F42C1;
+  background-color: #EFEAFF;
 }
 .file-uploader.disabled {
   opacity: 0.6;
@@ -77,9 +75,9 @@ main {
   color: #777777;
 }
 
-/* --- 3. 선택된 파일 목록 (Light Mode) --- */
+/* --- 선택된 파일 목록 (Light Mode) --- */
 .file-list {
-  background: #F8F9FA; /* [변경] 연한 회색 배경 */
+  background: #F8F9FA;
   border: 1px solid #E0E0E0;
   padding: 15px;
   border-radius: 8px;
@@ -90,7 +88,7 @@ main {
   margin: 10px 0 0 0;
 }
 .file-list li {
-  background: #FFFFFF; /* [변경] 흰색 배경 */
+  background: #FFFFFF;
   border: 1px solid #E0E0E0;
   padding: 5px 10px;
   border-radius: 4px;
@@ -98,10 +96,10 @@ main {
   font-size: 0.9rem;
 }
 
-/* --- 4. 분석 버튼 (Light Mode) --- */
+/* --- 분석 버튼  --- */
 .analyze-button {
-  background-color: #6F42C1; /* [변경] Ludium 짙은 보라색 */
-  color: #FFFFFF; /* [변경] 흰색 텍스트 */
+  background-color: #6F42C1;
+  color: #FFFFFF;
   border: none;
   padding: 15px 30px;
   border-radius: 8px;
@@ -111,19 +109,19 @@ main {
   transition: all 0.2s ease;
 }
 .analyze-button:hover:not(:disabled) {
-  background-color: #5935A1; /* [변경] 더 짙은 보라색 */
+  background-color: #5935A1;
 }
 .analyze-button:disabled {
-  background-color: #E0E0E0; /* [변경] 연한 회색 */
+  background-color: #E0E0E0;
   color: #999999;
   cursor: not-allowed;
 }
 
-/* --- 5. 에러 / 로딩 (Light Mode) --- */
+/* --- 에러 / 로딩 (Light Mode) --- */
 .error-message {
-  color: #721c24; /* [변경] 짙은 빨강 (텍스트) */
-  background-color: #F8D7DA; /* [변경] 연한 빨강 (배경) */
-  border: 1px solid #F5C6CB; /* [변경] 더 연한 빨강 (테두리) */
+  color: #721c24;
+  background-color: #F8D7DA;
+  border: 1px solid #F5C6CB;
   padding: 15px;
   border-radius: 8px;
   text-align: center;
@@ -135,8 +133,8 @@ main {
   color: #555;
 }
 .spinner {
-  border: 5px solid #E0E0E0; /* [변경] 연한 회색 */
-  border-top: 5px solid #6F42C1; /* [변경] 보라색 */
+  border: 5px solid #E0E0E0;
+  border-top: 5px solid #6F42C1;
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -148,7 +146,7 @@ main {
   100% { transform: rotate(360deg); }
 }
 
-/* --- 6. 리포트 UI (Light Mode) --- */
+/* --- 리포트 UI  --- */
 .report-container {
   border-radius: 10px;
   overflow: hidden;
@@ -163,7 +161,7 @@ main {
   margin: 10px 0;
 }
 .report-body {
-  background-color: #F8F9FA; /* [변경] 본문 배경 (살짝 어둡게) */
+  background-color: #F8F9FA;
   padding: 10px 20px 20px 20px;
 }
 
@@ -172,8 +170,8 @@ main {
   border: 1px solid #C3E6CB;
 }
 .report-container.status-pass .report-header {
-  background-color: #D4EDDA; /* [변경] 연한 초록 (배경) */
-  color: #155724; /* [변경] 짙은 초록 (텍스트) */
+  background-color: #D4EDDA;
+  color: #155724;
 }
 
 /* [FAIL (빨간색) 테마] */
@@ -181,13 +179,13 @@ main {
   border: 1px solid #F5C6CB;
 }
 .report-container.status-fail .report-header {
-  background-color: #F8D7DA; /* [변경] 연한 빨강 (배경) */
-  color: #721c24; /* [변경] 짙은 빨강 (텍스트) */
+  background-color: #F8D7DA;
+  color: #721c24;
 }
 
 /* [세부 항목 (스캠/유효성)] */
 .check-section {
-  background: #FFFFFF; /* [변경] 흰색 배경 */
+  background: #FFFFFF;
   border: 1px solid #E0E0E0;
   padding: 15px;
   border-radius: 8px;
@@ -229,11 +227,18 @@ main {
   background: #F8FFF9;
 }
 
+.issue-item-quality {
+  border-left: 4px solid #FFC107;
+  background: #FFFBF0;
+}
+
 .issue-list li p {
   margin: 0;
   font-size: 1rem;
   color: #333333;
 }
+
+
 
 /* --- 리셋 버튼 --- */
 .reset-button {
@@ -252,3 +257,4 @@ main {
   background-color: #EFEAFF;
   color: #5935A1;
 }
+
