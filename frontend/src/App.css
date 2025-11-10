@@ -203,8 +203,6 @@ main {
   color: #333333;
 }
 
-/* [삭제됨] .score 관련 스타일 제거 (회의 결과 반영) */
-
 .no-issues {
   color: #777777;
   font-style: italic;
@@ -214,16 +212,43 @@ main {
   padding-left: 0;
   margin: 0;
 }
+
 .issue-list li {
-  background: #FFFBFB; /* [변경] 살짝 붉은 배경 */
   padding: 12px;
   border-radius: 5px;
   margin-bottom: 10px;
-  border-left: 4px solid #DC3545; /* [변경] 짙은 빨강 테두리 */
 }
-/* [삭제됨] .issue-list li strong 스타일 제거 (단순 문자열 표시) */
+
+.issue-item-scam {
+  border-left: 4px solid #DC3545;
+  background: #FFFBFB;
+}
+
+.issue-item-validity {
+  border-left: 4px solid #28a745;
+  background: #F8FFF9;
+}
+
 .issue-list li p {
   margin: 0;
   font-size: 1rem;
   color: #333333;
+}
+
+/* --- 리셋 버튼 --- */
+.reset-button {
+  background-color: #FFFFFF;
+  color: #6F42C1;
+  border: 2px solid #6F42C1;
+  padding: 13px 30px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+}
+.reset-button:hover {
+  background-color: #EFEAFF;
+  color: #5935A1;
 }

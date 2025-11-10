@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-   "start:backend": "cd backend && node server.js",
+    "start:backend": "cd backend && node server.js",
     "start:frontend": "npm run dev --prefix frontend",
     "start": "concurrently \"npm:start:backend\" \"npm:start:frontend\""
   },
@@ -14,5 +14,8 @@
   "type": "commonjs",
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "react-markdown": "^10.1.0"
   }
 }
