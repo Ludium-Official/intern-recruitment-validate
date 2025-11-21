@@ -5,22 +5,32 @@ const { GoogleGenAI } = require('@google/genai');
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:5173', // 로컬 테스트용
+    'http://localhost:3000', // 로컬 백엔드 테스트용
+    'https://ludium-aivs.vercel.app' // 배포된 프론트엔드 주소
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- Gemini API 설정 ---
-const GEMINI_API_KEY = process.env.AI_API_KEY;
+app.get('/', (req, res) => {
+    res.status(200).send('Ludium AI Verification Server is Running! 🚀');
+});
 
-// .env 파일에 API 키가 없다면 서버 시작 전에 오류를 발생시키고 강제종료임으로 주의하셈!!!!
+const GEMINI_API_KEY = process.env.API_AI_KEY;
+
 if (!GEMINI_API_KEY) {
     console.error("오류: AI_API_KEY 환경 변수가 설정되지 않았습니다.");
     process.exit(1); // 서버 시작 전에 종료됨
 }
 
-// Gemini api 관련 설정임 건들지 마세요!!
-// key 값 하고 모델명 임 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 const MODEL_NAME = 'gemini-2.5-flash';
 
@@ -33,53 +43,59 @@ const MODEL_NAME = 'gemini-2.5-flash';
 async function analyzeProgramWithGemini(programString) {
     
     const prompt = `
-   당신은 코드 분석 시스템입니다. 아래에 제공된 코드 파일을 분석하여 다음 5가지 질문에 대해 명확하게 답변하세요.
-    
-    1.  이 프로그램 코드에 **금융 사기(스캠) 또는 악성 코드** (데이터 탈취, 악성 URL 호출 등)가 포함되어 있습니까?
-    2.  이 코드 파일이 **구문적으로 유효한(valid) 코드**입니까?
-    3.  이 프로그램 코드에 **선정적인(suggestive/obscene) 문구**가 있습니까? (예: 변수명, 주석, 문자열)
-    4.  이 프로그램 코드는 **유저의 민감한 정보를 수집**합니까? (예: 개인 식별 정보, 금융 정보 등)
-    5.  이 프로그램 코드에 **논리적 오류** 또는 **주석/함수명과 실제 동작이 일치하지 않는 경우**가 있습니까? 
+   당신은 최고의 사이버 보안 분석가이자 숙련된 소프트웨어 아키텍트입니다.
+    당신의 임무는 제공된 코드 파일을 **"개별적으로"** 정밀하게 분석하는 것입니다.
+    아래에 제공된 코드 파일을 분석하여 다음 6가지 핵심 영역에 대해 **"각 파일마다"** 명확하게 답변하세요.
 
-    **답변은 반드시 한글로 Markdown 코드 블록 없이 순수한 JSON 객체(raw JSON object)로만 작성해 주세요.**
-    
-    --- JSON 출력 형식 (필수) ---
+    --- 6가지 핵심 영역 (각 파일마다 검사) ---
+    1.  **보안 위협 (Security Threats):** (스캠, 피싱, 데이터 탈취, 악성 URL 등)
+    2.  **주요 취약점 (Key Vulnerabilities):** (SQL 인젝션, XSS, 하드코딩된 API 키 등)
+    3.  **데이터 프라이버시 (Data Privacy):** (민감 정보 수집, 제3자 전송 등)
+    4.  **코드 품질 및 논리 (Code Quality & Logic):** (주석-코드 불일치, 논리 오류 등)
+    5.  **부적절한 콘텐츠 (Inappropriate Content):** (선정적/모욕적 문구)
+    6.  **구문 유효성 (Syntax Validity):** (문법 오류)
+
+    **[가장 중요한 출력 지시]**
+    - 답변은 반드시 **단 하나의 JSON 객체**여야 합니다.
+    - 이 객체의 **Key는 "파일명"**이어야 하고, **Value는 해당 파일의 "분석 리포트"**여야 합니다.
+    - "분석 리포트"는 6대 항목의 검사 결과를 포함해야 합니다.
+    - Markdown 코드 블록 없이 순수한 JSON 객체(raw JSON object)로만 작성해 주세요.
+
+    --- [필수] finalDecision 결정 로직 (각 파일마다 적용) ---
+    1.  'securityThreatCheck.detected'가 true이거나 'vulnerabilityCheck.riskLevel'이 '높음'이면 "CRITICAL_RISK"
+    2.  'vulnerabilityCheck.detected'가 true (단, '높음'이 아님) 이거나 'privacyCheck.riskLevel'이 '높음' 또는 '중간'이면 "SECURITY_WARNING"
+    3.  'syntaxCheck.valid'가 false이면 "INVALID_FORMAT"
+    4.  'contentCheck.detected'가 true이거나 'codeQualityCheck.detected'가 true이거나 'privacyCheck.riskLevel'이 '낮음'이면 "CONTENT_WARNING"
+    5.  위 1, 2, 3, 4에 해당하지 않고 모든 검사를 통과한 경우에만 "CLEAN"
+
+    --- JSON 출력 형식 예시 (이 형식을 정확히 따를 것) ---
     {
-      "runId": "analysis-${new Date().toISOString().split('T')[0]}-XXXXXXXXX",
-      "status": "SUCCESS" 또는 "ERROR",
-      "processedAt": "${new Date().toISOString()}",
-      "finalDecision": "SCAM_DETECTED" 또는 "INVALID_FORMAT" 또는 "CONTENT_WARNING" 또는 "CLEAN",
-      "summary": "프로그램 전체에 대한 분석 결과를 요약합니다.",
-      "reportDetails": {
-        "scamCheck": {
-          "detected": true 또는 false,
-          "issues": ["스캠/악성 코드 관련 문제점 또는 '없음'"]
-        },
-        "validityCheck": {
-          "valid": true 또는 false,
-          "issues": ["코드 구문 유효성 관련 문제점 또는 '모든 파일이 유효함'"]
-        },
-        "sensationalCheck": {
-          "detected": true 또는 false,
-          "issues": ["선정적인 문구 관련 문제점 또는 '없음'"]
-        },
-        "dataCollectionCheck": {
-          "detected": true 또는 false,
-          "issues": ["민감 정보 수집 관련 문제점 또는 '없음'"]
-        },
-        "logicCheck": {
-          "detected": true 또는 false,
-          "issues": ["논리적 오류 또는 코드 불일치 관련 문제점 또는 '없음'"]
+      "scam_check.js": {
+        "finalDecision": "CRITICAL_RISK",
+        "summary": "악성 URL로 데이터를 탈취하는 코드가 발견되었습니다.",
+        "reportDetails": {
+          "securityThreatCheck": { "detected": true, "riskLevel": "높음", "issues": ["악성 URL로 데이터를 전송합니다."] },
+          "vulnerabilityCheck": { "detected": false, "riskLevel": "없음", "issues": ["없음"] },
+          "privacyCheck": { "riskLevel": "없음", "issues": ["없음"] },
+          "syntaxCheck": { "valid": true, "issues": ["모든 파일이 유효함"] },
+          "codeQualityCheck": { "detected": false, "issues": ["없음"] },
+          "contentCheck": { "detected": false, "issues": ["없음"] }
+        }
+      },
+      "utils.js": {
+        finalDecision": "CLEAN",
+        "summary": "분석 결과, 특별한 문제가 발견되지 않았습니다.",
+        "reportDetails": {
+          "securityThreatCheck": { "detected": false, "riskLevel": "없음", "issues": ["없음"] },
+          "vulnerabilityCheck": { "detected": false, "riskLevel": "없음", "issues": ["없음"] },
+          "privacyCheck": { "riskLevel": "없음", "issues": ["없음"] },
+          "syntaxCheck": { "valid": true, "issues": ["모든 파일이 유효함"] },
+          "codeQualityCheck": { "detected": false, "issues": ["없음"] },
+          "contentCheck": { "detected": false, "issues": ["없음"] }
         }
       }
     }
-    
-    --- finalDecision 결정 로직 (필수) ---
-    1.  'scamCheck.detected'가 true이면 "SCAM_DETECTED"
-    2.  'validityCheck.valid'가 false이면 "INVALID_FORMAT"
-    3.  'sensationalCheck.detected'가 true이거나 'dataCollectionCheck.detected'가 true이거나 'logicCheck.detected'가 true이면 "CONTENT_WARNING"
-    4.  위 1, 2, 3에 해당하지 않고 모든 검사를 통과한 경우에만 "CLEAN"
-
+     
     --- 분석할 프로그램 코드 () ---
     ${programString} 
     ---
@@ -126,11 +142,12 @@ app.post('/analyze', async (req, res) => {
         
         //합쳐진 'programContext' 문자열을 분석 함수로 전달
         const analysisResult = await analyzeProgramWithGemini(programContext);
-        
+        // AI가 ```json ... ``` 같은 마크다운을 섞어 보내면 제거하는 정규식
+        const cleanedResult = analysisResult.replace(/```json|```/g, '').trim();
         // Gemini 분석 결과가 순수 JSON 문자열일 것으로 예상하고 파싱
         let finalResponse;
         try {
-            finalResponse = JSON.parse(analysisResult);
+            finalResponse = JSON.parse(cleanedResult);
         } catch (e) {
             console.error("모델 응답 파싱 오류:", e);
             return res.status(500).json({
@@ -140,6 +157,25 @@ app.post('/analyze', async (req, res) => {
             });
         }
         
+        Object.keys(finalResponse).forEach(fileName => {
+        const report = finalResponse[fileName]; // (개별 파일 리포트)
+
+            if (report && report.finalDecision === 'CLEAN' && report.reportDetails) {
+
+                Object.keys(report.reportDetails).forEach(checkKey => {
+                    const detailItem = report.reportDetails[checkKey];
+ 
+                    if (detailItem && detailItem.issues) {
+                        if (checkKey === 'syntaxCheck') {
+                            detailItem.issues = ["모든 파일이 유효함"];
+                        } else {
+                            detailItem.issues = ["없음"];
+                        }
+                    }
+                });
+            }
+        });
+
         // 최종적으로 파싱된 JSON 객체를 클라이언트에게 반환
         res.status(200).json({ 
             status: "success",
@@ -156,8 +192,7 @@ app.post('/analyze', async (req, res) => {
     }
 });
 
-// --- 서버 시작 --- (문구는 터미널에 표기되므로 신경 쓰지 않아도 되!!)
+// --- 서버 시작 ---
 app.listen(port, () => {
     console.log(`JSON 분석 서버가 http://localhost:${port} 에서 실행 중입니다.`);
-    console.log(`분석을 위해 POST 요청을 http://localhost:${port}/analyze 로 보내세요.`);
 });
