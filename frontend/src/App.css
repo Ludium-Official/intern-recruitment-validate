@@ -362,7 +362,7 @@ body.dark-mode .report-container.status-warning .report-header {
   color: #FFF3CD; 
 }
 
-/* [세부 항목 (스캠/유효성)] */
+/* [세부 항목] */
 .check-section {
   background: var(--card-bg-light);
   border: 1px solid var(--border-color);

@@ -9,12 +9,12 @@ function formatCheckTitle(key) {
 // BE의 새 6개 항목 키(key)에 맞는 이모지를 매핑합니다.
 function getCheckEmoji(key) {
   const emojiMap = {
-    securityThreatCheck: '🚨', // 보안 위협 (Scam)
-    vulnerabilityCheck: '🛡️', // 취약점 (SQLi, Keys)
-    privacyCheck: '🕵️', // 프라이버시 (Data Collection)
-    syntaxCheck: '⚙️', // 구문 (Validity)
-    codeQualityCheck: '🤔', // 코드 품질 (Logic)
-    contentCheck: '🧐' // 부적절한 콘텐츠 (Sensational)
+    securityThreatCheck: '🚨',
+    vulnerabilityCheck: '🛡️',
+    privacyCheck: '🕵️',
+    syntaxCheck: '⚙️',
+    codeQualityCheck: '🤔',
+    contentCheck: '🧐'
   };
   // 모르는 key가 오면 '기타'(📊) 아이콘을 반환합니다.
   return emojiMap[key] || '📊';
@@ -67,37 +67,45 @@ const getStatusClass = (decision) => {
   }
 }
 
-// 'App.jsx'로부터 'report' 객체 하나만 props로 받습니다.
-function ReportDisplay({ report, fileName }) {
-  
-  // 'report'가 비정상적(null, undefined)일 경우를 대비한 방어 코드
-  // 이 코드가 실행되면 App.jsx가 'reportData'를 잘못 전달한 것입니다.
-  if (!report || !report.reportDetails) {
-    return (
-      <div className="report-container status-fail">
-        <div className="report-header">
-          <h2>❌ 리포트 데이터 오류</h2>
-          <p className="report-summary">리포트 객체(report)가 비어있거나 형식이 잘못되었습니다.</p>
-        </div>
-      </div>
-    );
+const getRiskProps = (decision) => {
+  switch (decision) {
+    case 'CRITICAL_RISK':
+      return { level: '심각 (CRITICAL)', barColor: '#FFFFFF', width: '100%' };
+    case 'SECURITY_WARNING':
+      return { level: '높음 (HIGH)', barColor: '#FFC107', width: '80%' };
+    case 'INVALID_FORMAT':
+      return { level: '중간 (MEDIUM)', barColor: '#FFC107', width: '50%' };
+    case 'CONTENT_WARNING':
+      return { level: '낮음 (LOW)', barColor: '#FFC107', width: '25%' };
+    case 'CLEAN':
+      return { level: '안전 (CLEAN)', barColor: '#FFFFFF', width: '0%' };
+    default:
+      return { level: '알 수 없음', barColor: '#FFFFFF', width: '50%' };
   }
+}
 
-  // 헬퍼 함수를 호출하여 이 리포트의 CSS 클래스 (pass/fail/warning)를 가져옵니다.
-  const statusClass = getStatusClass(report.finalDecision);
-  
-  // 리포트의 세부 항목(6개) 객체를 가져옵니다.
+const getStatusClass = (decision) => {
+  switch (decision) {
+    case 'CLEAN':
+      return 'status-pass';  
+    case 'CRITICAL_RISK':
+    case 'INVALID_FORMAT':
+      return 'status-fail';    
+    case 'SECURITY_WARNING':
+    case 'CONTENT_WARNING':
+      return 'status-warning';     
+    default:
+      return 'status-fail';
+  }
+}
+
+function ReportDisplay({ report }) {
+  const statusClass = getStatusClass(report.finalDecision); 
   const reportDetails = report.reportDetails;
-  
-  // 'Object.keys()'를 사용해 6개 항목의 key 이름 배열을 만듭니다.
-  // (예: ['securityThreatCheck', 'vulnerabilityCheck', ...])
   const checkKeys = Object.keys(reportDetails);
-  
-  // 헬퍼 함수를 호출하여 게이지 바에 필요한 정보(텍스트, 색상, 너비)를 가져옵니다.
   const risk = getRiskProps(report.finalDecision);
 
   return (
-    // 'statusClass' 변수를 className에 적용하여 헤더 색상을 동적으로 변경합니다.
     <div className={`report-container ${statusClass}`}>
       <div className="report-header">
       <div className="report-filename">
@@ -109,14 +117,12 @@ function ReportDisplay({ report, fileName }) {
             '✅ 검증 통과 (Pass)' : 
             (report.finalDecision === 'CONTENT_WARNING' || report.finalDecision === 'SECURITY_WARNING' ? 
               '⚠️ 검증 경고 (Warning)' : 
-              '❌ 검증 실패 (Fail)') // CRITICAL_RISK, INVALID_FORMAT, default
+              '❌ 검증 실패 (Fail)')
           }
         </h2>
         
-        {/* AI가 생성한 'summary' 텍스트를 표시합니다. */}
         <p className="report-summary">{report.summary}</p>
 
-        {/* (위험도 게이지 바) */}
         <div className="risk-meter">
           <strong>Risk Level: <span>{risk.level}</span></strong>
           <div className="risk-bar-container">
@@ -133,13 +139,9 @@ function ReportDisplay({ report, fileName }) {
 
       {/* (리포트 본문) */}
       <div className="report-body">
-        {/* 'checkKeys' 배열(6개)을 순회하며 각 항목을 렌더링합니다. */}
         {checkKeys.map((key) => {
           
           const checkData = reportDetails[key];
-          
-          // [중요] BE의 새 스키마에서 'privacyCheck' 등 'issues' 배열이 없는 항목이 있을 수 있습니다.
-          // 'issues' 배열이 없는 항목은 UI에 렌더링하지 않고 건너뜁니다.
           if (!checkData || !checkData.issues) return null; 
 
           const issues = checkData.issues;
@@ -159,18 +161,7 @@ function ReportDisplay({ report, fileName }) {
                 {/* 각 항목의 'issues' 배열을 순회하며 <li> 태그를 렌더링합니다. */}
                 {issues.map((issue, index) => {
                   
-                  // '안전' 키워드 목록 (이 목록에 포함된 텍스트는 '초록색' 줄로 표시됨)
-                  const safeKeywords = [
-                    '없음', 
-                    '유효함', 
-                    '발견되지 않았습니다', 
-                    '모든 파일이 유효함', 
-                    '구문적으로 유효합니다',
-                    '모든 구문이 유효합니다',
-                    '모든 코드가 유효한 문법을 따르고 있습니다'
-                  ];
-                  
-                  // 'issue' 텍스트에 'safeKeywords' 중 하나라도 포함되어 있는지 확인합니다.
+                  const safeKeywords = ['없음', '유효함', '발견되지 않았습니다', '모든 파일이 유효함', '구문적으로 유효합니다'];
                   const isSafeIssue = safeKeywords.some(keyword => 
                       issue.includes(keyword)
                   );
@@ -182,15 +173,12 @@ function ReportDisplay({ report, fileName }) {
                   if (isSafeIssue) {
                     itemStyleClass = 'issue-item-validity';
                   
-                  // 2. (빨간색) 'isSafeIssue'=false이고, key가 '심각한' 항목들인 경우
                   } else if (key === 'securityThreatCheck' || key === 'vulnerabilityCheck' || key === 'syntaxCheck') {
                     itemStyleClass = 'issue-item-scam';
                   
-                  // 3. (노란색) 'isSafeIssue'=false이고, key가 '경고' 항목들인 경우
                   } else if (key === 'privacyCheck' || key === 'codeQualityCheck' || key === 'contentCheck') {
                     itemStyleClass = 'issue-item-quality';
                   
-                  // 4. (Fallback) 모르는 key가 오면 '빨간색'
                   } else {
                     itemStyleClass = 'issue-item-scam'; 
                   }
