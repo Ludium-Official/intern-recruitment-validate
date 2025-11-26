@@ -5,22 +5,32 @@ const { GoogleGenAI } = require('@google/genai');
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://localhost:5173', // 로컬 테스트용
+    'http://localhost:3000', // 로컬 백엔드 테스트용
+    'https://ludium-aivs.vercel.app' // 배포된 프론트엔드 주소
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- Gemini API 설정 ---
-const GEMINI_API_KEY = process.env.AI_API_KEY;
+app.get('/', (req, res) => {
+    res.status(200).send('Ludium AI Verification Server is Running! 🚀');
+});
 
-// .env 파일에 API 키가 없다면 서버 시작 전에 오류를 발생시키고 강제종료임으로 주의하셈!!!!
+const GEMINI_API_KEY = process.env.API_AI_KEY;
+
 if (!GEMINI_API_KEY) {
     console.error("오류: AI_API_KEY 환경 변수가 설정되지 않았습니다.");
     process.exit(1); // 서버 시작 전에 종료됨
 }
 
-// Gemini api 관련 설정임 건들지 마세요!!
-// key 값 하고 모델명 임 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 const MODEL_NAME = 'gemini-2.5-flash';
 
@@ -156,11 +166,12 @@ app.post('/analyze', async (req, res) => {
         
         //합쳐진 'programContext' 문자열을 분석 함수로 전달
         const analysisResult = await analyzeProgramWithGemini(programContext);
-        
+        // AI가 ```json ... ``` 같은 마크다운을 섞어 보내면 제거하는 정규식
+        const cleanedResult = analysisResult.replace(/```json|```/g, '').trim();
         // Gemini 분석 결과가 순수 JSON 문자열일 것으로 예상하고 파싱
         let finalResponse;
         try {
-            finalResponse = JSON.parse(analysisResult);
+            finalResponse = JSON.parse(cleanedResult);
         } catch (e) {
             console.error("모델 응답 파싱 오류:", e);
             return res.status(500).json({
@@ -170,6 +181,25 @@ app.post('/analyze', async (req, res) => {
             });
         }
         
+        Object.keys(finalResponse).forEach(fileName => {
+        const report = finalResponse[fileName]; // (개별 파일 리포트)
+
+            if (report && report.finalDecision === 'CLEAN' && report.reportDetails) {
+
+                Object.keys(report.reportDetails).forEach(checkKey => {
+                    const detailItem = report.reportDetails[checkKey];
+ 
+                    if (detailItem && detailItem.issues) {
+                        if (checkKey === 'syntaxCheck') {
+                            detailItem.issues = ["모든 파일이 유효함"];
+                        } else {
+                            detailItem.issues = ["없음"];
+                        }
+                    }
+                });
+            }
+        });
+
         // 최종적으로 파싱된 JSON 객체를 클라이언트에게 반환
         res.status(200).json({ 
             status: "success",
@@ -186,8 +216,7 @@ app.post('/analyze', async (req, res) => {
     }
 });
 
-// --- 서버 시작 --- (문구는 터미널에 표기되므로 신경 쓰지 않아도 되!!)
+// --- 서버 시작 ---
 app.listen(port, () => {
     console.log(`JSON 분석 서버가 http://localhost:${port} 에서 실행 중입니다.`);
-    console.log(`분석을 위해 POST 요청을 http://localhost:${port}/analyze 로 보내세요.`);
 });
