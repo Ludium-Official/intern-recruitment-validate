@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function formatCheckTitle(key) {
   const result = key.replace(/([A-Z])/g, ' $1');
@@ -95,6 +95,14 @@ function ReportDisplay({ report, fileName }) {
   
   // 헬퍼 함수를 호출하여 게이지 바에 필요한 정보(텍스트, 색상, 너비)를 가져옵니다.
   const risk = getRiskProps(report.finalDecision);
+  const [barWidth, setBarWidth] = useState('0%');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBarWidth(risk.width);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [risk.width]);
 
   return (
     // 'statusClass' 변수를 className에 적용하여 헤더 색상을 동적으로 변경합니다.
@@ -123,8 +131,9 @@ function ReportDisplay({ report, fileName }) {
             <div 
               className="risk-bar" 
               style={{ 
-                width: risk.width, 
-                backgroundColor: risk.barColor 
+                width: barWidth, 
+                backgroundColor: risk.barColor,
+                transition: 'width 1s ease-out'
               }}
             ></div>
           </div>

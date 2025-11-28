@@ -4,7 +4,7 @@ import { useLudiumApp } from './hooks/useLudiumApp';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ThemeToggle from './components/ui/ThemeToggle';
-import LoadingSpinner from './components/ui/LoadingSpinner';
+import SkeletonLoader from './components/ui/SkeletonLoader';
 import UploadView from './components/views/UploadView';
 import ResultView from './components/views/ResultView';
 import ErrorView from './components/views/ErrorView';
@@ -15,6 +15,7 @@ function App() {
     selectedFiles,
     isLoading,
     reportData,
+    fileContents,
     error,
     selectedFileName,
     toggleTheme,
@@ -31,7 +32,7 @@ function App() {
       <Header />
 
       <main>
-        {isLoading && <LoadingSpinner />}
+        {isLoading && <SkeletonLoader />}
 
         {error && (
           <ErrorView 
@@ -43,6 +44,7 @@ function App() {
         {!isLoading && !error && reportData && (
           <ResultView 
             reportData={reportData}
+            fileContents={fileContents}
             selectedFileName={selectedFileName}
             setSelectedFileName={setSelectedFileName}
             onReset={handleReset}
@@ -57,8 +59,7 @@ function App() {
             onAnalyze={handleAnalyze}
           />
         )}
-      </main>
-      
+      </main>     
       <Footer />
     </div>
   );
