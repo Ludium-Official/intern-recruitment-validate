@@ -1,13 +1,11 @@
 import React from 'react';
 import './App.css';
-import { useLudiumApp } from './hooks/useLudiumApp';
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
-import ThemeToggle from './components/ui/ThemeToggle';
-import SkeletonLoader from './components/ui/SkeletonLoader';
-import UploadView from './components/views/UploadView';
-import ResultView from './components/views/ResultView';
-import ErrorView from './components/views/ErrorView';
+import FileUploader from './components/FileUploader';
+import ReportDisplay from './components/ReportDisplay';
+
+// BE 배포 주소로 설정 (예시: https://ludium.onrender.com/analyze)
+const API_URL = 'http://localhost:3000/analyze';
+const ALLOWED_EXTENSIONS = ['.js', '.sol', '.json', '.jsx', '.ts', '.txt', '.md'];
 
 function App() {
   const {
@@ -32,34 +30,57 @@ function App() {
       <Header />
 
       <main>
-        {isLoading && <SkeletonLoader />}
-
-        {error && (
-          <ErrorView 
-            error={error} 
-            onRetry={handleReset} 
-          />
+        {isLoading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>AI가 코드를 검증하고 있습니다. 잠시만 기다려주세요...</p>
+          </div>
         )}
+
+        {error && <div className="error-message">{error}</div>}
 
         {!isLoading && !error && reportData && (
-          <ResultView 
-            reportData={reportData}
-            fileContents={fileContents}
-            selectedFileName={selectedFileName}
-            setSelectedFileName={setSelectedFileName}
-            onReset={handleReset}
-          />
+          <>  
+            <ReportDisplay report={reportData} />
+            <button 
+              className="reset-button"
+              onClick={handleReset}
+            >
+              새로 분석하기
+            </button>
+          </>
+        )}
+        
+        {!isLoading && !error && !reportData && (
+          <>
+            <FileUploader 
+              onFilesSelect={handleFilesSelect}
+              disabled={isLoading}
+            />
+            
+            {selectedFiles.length > 0 && (
+              <div className="file-list">
+                <strong>선택된 파일:</strong>
+                <ul>
+                  {selectedFiles.map(file => (
+                    <li key={file.name}>{file.name} ({Math.round(file.size / 1024)} KB)</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button 
+              className="analyze-button"
+              onClick={handleAnalyzeClick}
+              disabled={isLoading || selectedFiles.length === 0}
+            >
+              {isLoading ? "AI가 분석 중입니다..." : "분석하기"}
+            </button>
+          </>
         )}
 
-        {!isLoading && !error && !reportData && (
-          <UploadView 
-            selectedFiles={selectedFiles}
-            isLoading={isLoading}
-            onFilesSelect={handleFilesSelect}
-            onAnalyze={handleAnalyze}
-          />
-        )}
-      </main>     
+      </main>
+      
       <Footer />
     </div>
   );
