@@ -3,15 +3,20 @@ import { analyzeCode } from '../services/apiService';
 import { filterValidFiles, readAllFiles } from '../utils/fileUtils';
 
 export const useLudiumApp = () => {
-  // --- 상태 초기화 ---
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('ludium-theme');
-    return savedTheme === 'dark'; // 기본값: false (Light Mode)
+    return savedTheme === 'dark'; 
   });
 
   const [reportData, setReportData] = useState(() => {
     const savedReport = sessionStorage.getItem('ludium-report-data');
     return savedReport ? JSON.parse(savedReport) : null;
+  });
+
+  // [추가] 원본 파일 내용을 저장할 상태 (새로고침 유지)
+  const [fileContents, setFileContents] = useState(() => {
+    const savedContents = sessionStorage.getItem('ludium-file-contents');
+    return savedContents ? JSON.parse(savedContents) : null;
   });
 
   const [selectedFileName, setSelectedFileName] = useState(() => {
@@ -36,6 +41,15 @@ export const useLudiumApp = () => {
     }
   }, [reportData]);
 
+  // [추가] 파일 내용도 세션에 저장
+  useEffect(() => {
+    if (fileContents) {
+      sessionStorage.setItem('ludium-file-contents', JSON.stringify(fileContents));
+    } else {
+      sessionStorage.removeItem('ludium-file-contents');
+    }
+  }, [fileContents]);
+
   useEffect(() => {
     if (selectedFileName) {
       sessionStorage.setItem('ludium-selected-file', selectedFileName);
@@ -44,18 +58,19 @@ export const useLudiumApp = () => {
     }
   }, [selectedFileName]);
 
-  // --- Actions  ---
+  // --- Actions ---
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
   const handleFilesSelect = (files) => {
     setError(null);
     setReportData(null);
+    setFileContents(null); // 초기화
     setSelectedFileName(null);
     
     const validFiles = filterValidFiles(files);
 
     if (validFiles.length !== files.length) {
-      setError("잘못된 형식의 파일을 업로드 하였습니다. 파일 형식을 확인해주세요. (.js, .sol, .json 등)");
+      setError("잘못된 형식의 파일을 업로드 하였습니다. 파일 형식을 확인해주세요.");
       setSelectedFiles([]);
     } else {
       setSelectedFiles(validFiles);
@@ -71,10 +86,19 @@ export const useLudiumApp = () => {
     setIsLoading(true);
     setError(null);
     setReportData(null);
+    setFileContents(null); // 초기화
     setSelectedFileName(null); 
 
     try {
       const codeFiles = await readAllFiles(selectedFiles);
+      
+      // [추가] 읽어온 파일 내용을 객체 형태로 변환하여 저장 (파일명: 내용)
+      const contentsMap = {};
+      codeFiles.forEach(file => {
+        contentsMap[file.fileName] = file.content;
+      });
+      setFileContents(contentsMap);
+
       let analysisMap = await analyzeCode(codeFiles);
       
       if (!analysisMap || Object.keys(analysisMap).length === 0) {
@@ -96,6 +120,7 @@ export const useLudiumApp = () => {
       }
 
     } catch (err) {
+      console.error(err); 
       setError(`분석 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -105,21 +130,22 @@ export const useLudiumApp = () => {
   const handleReset = () => {
     setSelectedFiles([]);
     setReportData(null);
+    setFileContents(null); // 초기화
     setSelectedFileName(null);
     setError(null);
     sessionStorage.removeItem('ludium-report-data');
+    sessionStorage.removeItem('ludium-file-contents'); // 삭제
     sessionStorage.removeItem('ludium-selected-file');
   };
 
   return {
-    // State
     isDarkMode,
     selectedFiles,
     isLoading,
     reportData,
+    fileContents,
     error,
     selectedFileName,
-    // Actions
     toggleTheme,
     handleFilesSelect,
     handleAnalyze,

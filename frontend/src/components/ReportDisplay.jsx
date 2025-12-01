@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function formatCheckTitle(key) {
   const result = key.replace(/([A-Z])/g, ' $1');
@@ -104,6 +104,14 @@ function ReportDisplay({ report }) {
   const reportDetails = report.reportDetails;
   const checkKeys = Object.keys(reportDetails);
   const risk = getRiskProps(report.finalDecision);
+  const [barWidth, setBarWidth] = useState('0%');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBarWidth(risk.width);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [risk.width]);
 
   return (
     <div className={`report-container ${statusClass}`}>
@@ -129,8 +137,9 @@ function ReportDisplay({ report }) {
             <div 
               className="risk-bar" 
               style={{ 
-                width: risk.width, 
-                backgroundColor: risk.barColor 
+                width: barWidth, 
+                backgroundColor: risk.barColor,
+                transition: 'width 1s ease-out'
               }}
             ></div>
           </div>

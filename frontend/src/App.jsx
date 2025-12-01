@@ -13,6 +13,7 @@ function App() {
     selectedFiles,
     isLoading,
     reportData,
+    fileContents,
     error,
     selectedFileName,
     toggleTheme,
